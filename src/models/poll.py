@@ -80,8 +80,8 @@ class PollOption(BaseModel):
         back_populates='options',
     )
 
-    option_stats: Mapped['OptionStatistics'] = relationship(
-        'OptionStatistics',
+    option_stats: Mapped['OptionStatistic'] = relationship(
+        'OptionStatistic',
         back_populates='options',
         cascade='all, delete-orphan',
     )

@@ -2,7 +2,7 @@ from src.models.base import BaseModel
 from src.models.user import User
 from src.models.vote import Vote
 from src.models.poll import Poll, PollOption
-from src.models.statistics import PollStatistic, OptionStatistics
+from src.models.statistics import PollStatistic, OptionStatistic
 
 __all__ = (
     'BaseModel',
@@ -11,5 +11,5 @@ __all__ = (
     'Poll',
     'PollOption',
     'PollStatistic',
-    'OptionStatistics',
+    'OptionStatistic',
 )

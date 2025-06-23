@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 
 def init_database(app: Flask) -> None:
-    from src.models import User, Poll, Vote, PollOption, PollStatistic, OptionStatistics
+    from src.models import User, Poll, Vote, PollOption, PollStatistic, OptionStatistic
     db.init_app(app)
 
 

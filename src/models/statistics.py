@@ -29,14 +29,14 @@ class PollStatistic(BaseModel):
         back_populates='poll_stats',
     )
 
-    option_stats: Mapped[list['OptionStatistics']] = relationship(
-        'OptionStatistics',
+    option_stats: Mapped[list['OptionStatistic']] = relationship(
+        'OptionStatistic',
         back_populates='poll_stats',
         cascade='all, delete-orphan',
     )
 
 
-class OptionStatistics(BaseModel):
+class OptionStatistic(BaseModel):
     __tablename__ = "option_statistics"
 
     poll_stats_id: Mapped[int] = mapped_column(
