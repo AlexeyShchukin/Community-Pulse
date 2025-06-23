@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
+from src.services.poll import PollService
+
 data = [
     {
         "id": 1,
@@ -29,6 +31,9 @@ data = [
 class PollController:
     # CRUD for Poll
 
+    def __init__(self):
+        self.poll_service = PollService()
+
     @staticmethod
     def get_polls():
         return jsonify({
@@ -36,19 +41,18 @@ class PollController:
             "data": data
         }), HTTPStatus.OK
 
-    @staticmethod
-    def get_poll_by_id(poll_id: int):
-        obj = filter(lambda x: x.get("id") == poll_id, data)
+    def get_poll_by_id(self, poll_id: int):
+        obj, err = self.poll_service.get_poll_by_id(poll_id)
         if obj:
             return jsonify({
                 "status": "success",
-                "data": next(obj)
+                "data": obj
             }), HTTPStatus.OK
 
         return jsonify({
-            "status": "success",
-            "data": {}
-        }), HTTPStatus.NO_CONTENT  # 204
+            "status": "Error",
+            "message": err
+        }), HTTPStatus.NOT_FOUND  # 404
 
     @staticmethod
     def create_poll(self):

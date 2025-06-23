@@ -45,6 +45,5 @@ class Vote(BaseModel):
 
     voter: Mapped['User'] = relationship(
         'User',
-        back_populates='votes',
-        cascade='all, delete-orphan',
+        back_populates='votes'
     )

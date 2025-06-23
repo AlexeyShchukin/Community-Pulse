@@ -4,7 +4,7 @@ from src.core.app_runner import db
 from src.models.base import BaseModel
 
 
-class PollStatistics(BaseModel):
+class PollStatistic(BaseModel):
     __tablename__ = "poll_statistics"
 
     poll_id: Mapped[int] = mapped_column(
@@ -31,7 +31,7 @@ class PollStatistics(BaseModel):
 
     option_stats: Mapped[list['OptionStatistics']] = relationship(
         'OptionStatistics',
-        back_populates='statistic',
+        back_populates='poll_stats',
         cascade='all, delete-orphan',
     )
 
@@ -62,8 +62,8 @@ class OptionStatistics(BaseModel):
 
     # RELATIONS
 
-    poll_stats: Mapped['PollStatistics'] = relationship(
-        'PollStatistics',
+    poll_stats: Mapped['PollStatistic'] = relationship(
+        'PollStatistic',
         back_populates='option_stats',
     )
     options: Mapped['PollOption'] = relationship(
