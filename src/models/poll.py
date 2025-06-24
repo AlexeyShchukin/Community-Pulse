@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import BaseModel
@@ -32,6 +33,11 @@ class Poll(BaseModel):
         db.Boolean,
         default=True,
     )
+    category_id: Mapped[int] = mapped_column(
+        db.Integer,
+        db.ForeignKey('categories.id'),
+        nullable=False
+    )
 
     # Relations
 
@@ -40,18 +46,20 @@ class Poll(BaseModel):
         back_populates='poll',
         cascade='all, delete-orphan',
     )
-
     votes: Mapped[list['Vote']] = relationship(
         'Vote',
         back_populates='poll',
         cascade='all, delete-orphan',
     )
-
     poll_stats: Mapped['PollStatistic'] = relationship(
         'PollStatistic',
         back_populates='poll',
         uselist=False,
         cascade='all, delete-orphan',
+    )
+    category: Mapped['Category'] = relationship(
+        'Category',
+        back_populates='polls',
     )
 
 
@@ -84,4 +92,15 @@ class PollOption(BaseModel):
         'OptionStatistic',
         back_populates='options',
         cascade='all, delete-orphan',
+    )
+
+
+class Category(BaseModel):
+    __tablename__ = "categories"
+
+    name: Mapped[str] = mapped_column(db.String(50), nullable=False)
+
+    polls: Mapped['Poll'] = relationship(
+        'Poll',
+        back_populates='category',
     )
