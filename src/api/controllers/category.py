@@ -2,13 +2,13 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
-from src.services.poll import PollService
+from src.services.category import CategoryService
 
 
-class PollController:
-    poll_service = PollService()
+class CategoryController:
+    category_service = CategoryService()
 
-    def create_poll(self):
+    def create_category(self):
         data = request.get_json()
 
         if not data:
@@ -19,7 +19,7 @@ class PollController:
                 }
             ), HTTPStatus.BAD_REQUEST  # 400
 
-        poll, err = self.poll_service.create_poll(data)
+        category, err = self.category_service.create_category(data)
 
         if err:
             return jsonify({
@@ -29,11 +29,11 @@ class PollController:
 
         return jsonify({
             "status": "success",
-            "data": poll
+            "data": category
         }), HTTPStatus.CREATED
 
-    def get_poll_by_id(self, poll_id: int):
-        poll, err = self.poll_service.get_poll(poll_id)
+    def get_category_by_id(self, category_id: int):
+        category, err = self.category_service.get_category(category_id)
 
         if err:
             return jsonify({
@@ -43,11 +43,11 @@ class PollController:
 
         return jsonify({
             "status": "success",
-            "data": poll
+            "data": category
         }), HTTPStatus.OK  # 200
 
-    def get_polls(self):
-        polls, err = self.poll_service.get_all_polls()
+    def get_categories(self):
+        categories, err = self.category_service.get_all_categories()
 
         if err:
             return jsonify({
@@ -57,10 +57,10 @@ class PollController:
 
         return jsonify({
             "status": "success",
-            "data": polls
+            "data": categories
         }), HTTPStatus.OK
 
-    def update_poll(self, poll_id: int):
+    def update_category(self, category_id: int):
         data = request.get_json()
 
         if not data:
@@ -71,8 +71,8 @@ class PollController:
                 }
             ), HTTPStatus.BAD_REQUEST
 
-        poll, err = self.poll_service.update_poll(
-            poll_id=poll_id,
+        category, err = self.category_service.update_category(
+            category_id=category_id,
             data=data
         )
 
@@ -80,22 +80,22 @@ class PollController:
             return (jsonify({
                 "status": 'error',
                 "message": err
-            }), HTTPStatus.NOT_FOUND if err == f"{self.poll_service.poll_repo.model_class.__name__} not found"
+            }), HTTPStatus.NOT_FOUND if err == f"{self.category_service.category_repo.model_class.__name__} not found"
             else HTTPStatus.BAD_REQUEST)
 
         return jsonify({
             "status": 'success',
-            "data": poll
+            "data": category
         }), HTTPStatus.OK
 
-    def delete_poll(self, poll_id: int):
-        success, err = self.poll_service.delete_poll(poll_id=poll_id)
+    def delete_category(self, category_id: int):
+        success, err = self.category_service.delete_category(category_id)
 
         if err:
             return (jsonify({
                 "status": 'error',
                 "message": err
-            }), HTTPStatus.NOT_FOUND if err == f"{self.poll_service.poll_repo.model_class.__name__} not found"
+            }), HTTPStatus.NOT_FOUND if err == f"{self.category_service.category_repo.model_class.__name__} not found"
             else HTTPStatus.BAD_REQUEST)
 
         return jsonify({

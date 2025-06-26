@@ -1,16 +1,6 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-
 from src.core.config import settings
-
-# INIT DB
-db = SQLAlchemy()
-
-
-def init_database(app: Flask) -> None:
-    from src.models import User, Poll, Vote, PollOption, PollStatistic, OptionStatistic
-    db.init_app(app)
+from src.core.db import init_db
 
 
 # INIT ROUTES
@@ -25,10 +15,8 @@ def create_app() -> Flask:
 
     app.config.update(settings.get_flask_config())
 
-    migrate = Migrate()
-    migrate.init_app(app, db)
+    init_db(app)
 
-    init_database(app=app)
     register_routes(app=app)
 
     return app

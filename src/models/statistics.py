@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.core.app_runner import db
+from src.core.db import db
 from src.models.base import BaseModel
 
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import BaseModel
-from src.core.app_runner import db
+from src.core.db import db
 
 
 class Poll(BaseModel):
@@ -35,8 +35,8 @@ class Poll(BaseModel):
     )
     category_id: Mapped[int] = mapped_column(
         db.Integer,
-        db.ForeignKey('categories.id'),
-        nullable=False
+        db.ForeignKey('categories.id', ondelete='SET NULL'),
+        nullable=True
     )
 
     # Relations
@@ -60,6 +60,7 @@ class Poll(BaseModel):
     category: Mapped['Category'] = relationship(
         'Category',
         back_populates='polls',
+        cascade=''
     )
 
 
