@@ -66,7 +66,7 @@ class OptionStatistic(BaseModel):
         'PollStatistic',
         back_populates='option_stats',
     )
-    options: Mapped['PollOption'] = relationship(
+    poll_options: Mapped['PollOption'] = relationship(
         'PollOption',
         back_populates='option_stats',
     )

@@ -38,7 +38,7 @@ class Vote(BaseModel):
         back_populates='votes'
     )
 
-    options: Mapped['PollOption'] = relationship(
+    poll_options: Mapped['PollOption'] = relationship(
         'PollOption',
         back_populates='votes'
     )

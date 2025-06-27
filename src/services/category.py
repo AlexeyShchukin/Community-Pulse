@@ -1,82 +1,92 @@
-from typing import Any
+from typing import List, Dict, Any, Union
 
-from src.dto import CategoryRequestDTO, CategoryResponseDTO, CategoryUpdateDTO
-from src.models.poll import Category
 from src.repositories.category import CategoryRepository
+
+from src.dto import (
+    CategoryRequestDTO,
+    CategoryUpdateDTO,
+    CategoryResponseDTO
+)
+from src.core.exceptions import (
+    CustomBaseException,
+    EntityNotFoundException,
+    DatabaseException,
+    CategoryNotFoundException,
+    CategoryValidationException,
+    CategoryDatabaseException,
+    CategoryCreationException,
+    CategoryUpdateException,
+    CategoryDeletionException
+)
 
 
 class CategoryService:
-    category_repo = CategoryRepository()
+    category_repository = CategoryRepository()
 
-    def create_category(self, data: dict[str, Any]):
+    def create_category(self, data: Dict[str, Any]) -> Union[Dict, CustomBaseException]:
         try:
-            validated_data = CategoryRequestDTO(**data)
+            category_dto = CategoryRequestDTO(**data)
 
-            category = Category()
-            category.name = validated_data.name
+            result = self.category_repository.create(category_dto.model_dump())
 
-            category, err = self.category_repo.create(category)
+            if isinstance(result, DatabaseException):
+                return CategoryCreationException(result.message)
 
-            if err:
-                return None, str(err)
-
-            response = CategoryResponseDTO.model_validate(category)
-
-            return response.model_dump_json(indent=4), None
+            category_response = CategoryResponseDTO.model_validate(result)
+            return category_response.model_dump(mode='json')
 
         except Exception as e:
-            return None, str(e)
+            return CategoryValidationException(f"Ошибка валидации при создании категории: {str(e)}")
 
-    def get_category(self, category_id: int):
-        category, err = self.category_repo.get_by_id(category_id)
+    def get_category(self, category_id: int) -> Union[Dict, CustomBaseException]:
+        result = self.category_repository.get_by_id(category_id)
 
-        if err:
-            return None, err
+        if isinstance(result, EntityNotFoundException):
+            return CategoryNotFoundException(result.message)
+        if isinstance(result, DatabaseException):
+            return CategoryDatabaseException(result.message)
 
-        if not category:
-            return None, f"Not found"
+        category_response = CategoryResponseDTO.model_validate(result)
+        return category_response.model_dump(mode='json')
 
-        response = CategoryResponseDTO.model_validate(category)
+    def get_all_categories(self) -> Union[List[Dict], CustomBaseException]:
+        result = self.category_repository.get_all()
 
-        return response.model_dump_json(indent=4), None
+        if isinstance(result, DatabaseException):
+            return CategoryDatabaseException(result.message)
 
-    def get_all_categories(self):
-        categories, err = self.category_repo.get_all()
+        categories_list = [CategoryResponseDTO.model_validate(category).model_dump(mode='json')
+                           for category in result]
+        return categories_list
 
-        if err:
-            return None, err
-
-        response = [
-            CategoryResponseDTO.model_validate(
-                category).model_dump_json(indent=4)
-            for category in categories
-        ]
-
-        return response, None
-
-    def update_category(self, category_id: int, data: dict[str, Any]):
+    def update_category(self, category_id: int, data: Dict[str, Any]) -> Union[Dict, CustomBaseException]:
         try:
-            validated_data = CategoryUpdateDTO(**data)
+            category_dto = CategoryUpdateDTO(**data)
 
-            updated_data = validated_data.model_dump(
-                exclude_unset=True,
-                exclude_none=True
-            )
+            update_data = category_dto.model_dump(exclude_unset=True, exclude_none=True)
 
-            if not updated_data:
-                return None, "No data to update"
+            if not update_data:
+                return CategoryValidationException("Нет данных для обновления категории")
 
-            category, err = self.category_repo.update(category_id, updated_data)
+            result = self.category_repository.update(category_id, update_data)
 
-            if err:
-                return None, err
+            if isinstance(result, EntityNotFoundException):
+                return CategoryNotFoundException(result.message)
+            if isinstance(result, DatabaseException):
+                return CategoryUpdateException(result.message)
 
-            response = CategoryResponseDTO.model_validate(category)
-
-            return response.model_dump_json(indent=4), None
+            category_response = CategoryResponseDTO.model_validate(result)
+            return category_response.model_dump(mode='json')
 
         except Exception as e:
-            return None, str(e)
+            return CategoryValidationException(f"Ошибка валидации при обновлении категории: {str(e)}")
 
-    def delete_category(self, category_id: int):
-        return self.category_repo.delete(category_id)
+    def delete_category(self, category_id: int) -> Union[bool, CustomBaseException]:
+        result = self.category_repository.delete(category_id)
+
+        if isinstance(result, EntityNotFoundException):
+            return CategoryNotFoundException(result.message)
+        if isinstance(result, DatabaseException):
+            return CategoryDeletionException(result.message)
+
+        return result

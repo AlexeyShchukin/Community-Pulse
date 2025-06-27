@@ -31,7 +31,7 @@ class PollRequestDTO(BaseDTO):
     is_anonymous: bool = Field(
         default=True,
     )
-    options: list[PollOptionRequestDTO] = Field(
+    poll_options: list[PollOptionRequestDTO] = Field(
         min_length=2,
     )
     category_id: int

@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import List, Union
 
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.core.db import db
+from src.core.exceptions import PollCreationException
 from src.models import Poll, PollOption
 from src.repositories.base import BaseRepository
 
@@ -11,24 +12,20 @@ class PollRepository(BaseRepository):
     def __init__(self):
         super().__init__(Poll)
 
-    def create_with_options(
-            self,
-            poll_data: dict,
-            poll_options: list[str]
-    ) -> tuple[Optional[Poll], Optional[str]]:
+    def create_with_options(self, poll_data: dict, options_data: List[str]) -> Union[Poll, PollCreationException]:
         try:
             poll = Poll(**poll_data)
 
-            for option in poll_options:
-                option = PollOption(text=option)
-                poll.options.append(option)
+            for option_text in options_data:
+                option = PollOption(text=option_text)
+                poll.poll_options.append(option)
 
             db.session.add(poll)
             db.session.commit()
-            db.refresh(poll)
+            db.session.refresh(poll)
 
-            return poll, None
+            return poll
 
         except SQLAlchemyError as e:
             db.session.rollback()
-            return None, str(e)
+            return PollCreationException(f"Ошибка создания опроса: {str(e)}")

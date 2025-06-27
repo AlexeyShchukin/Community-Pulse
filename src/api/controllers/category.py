@@ -2,6 +2,14 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
+from src.core.exceptions import (
+    CategoryNotFoundException,
+    CategoryValidationException,
+    CategoryDatabaseException,
+    CategoryUpdateException,
+    CategoryDeletionException,
+    CustomBaseException
+)
 from src.services.category import CategoryService
 
 
@@ -19,45 +27,51 @@ class CategoryController:
                 }
             ), HTTPStatus.BAD_REQUEST  # 400
 
-        category, err = self.category_service.create_category(data)
+        result = self.category_service.create_category(data)
 
-        if err:
+        if isinstance(result, CustomBaseException):
             return jsonify({
                 "status": "error",
-                "message": err
+                "message": result.message
             }), HTTPStatus.BAD_REQUEST
 
         return jsonify({
             "status": "success",
-            "data": category
+            "data": result
         }), HTTPStatus.CREATED
 
     def get_category_by_id(self, category_id: int):
-        category, err = self.category_service.get_category(category_id)
+        result = self.category_service.get_category(category_id)
 
-        if err:
+        if isinstance(result, CategoryNotFoundException):
             return jsonify({
                 "status": "error",
-                "message": err
-            }), HTTPStatus.NOT_FOUND if err == "Not found" else HTTPStatus.BAD_REQUEST
+                "message": result.message
+            }), HTTPStatus.NOT_FOUND  # 404 для ненайденной сущности
+
+        if isinstance(result, CategoryDatabaseException):
+            return jsonify({
+                "status": "error",
+                "message": result.message
+            }), HTTPStatus.INTERNAL_SERVER_ERROR  # 500 для ошибок базы данных
 
         return jsonify({
             "status": "success",
-            "data": category
+            "data": result
         }), HTTPStatus.OK  # 200
 
     def get_categories(self):
-        categories, err = self.category_service.get_all_categories()
+        result = self.category_service.get_all_categories()
 
-        if err:
+        if isinstance(result, CategoryDatabaseException):
             return jsonify({
                 "status": "error",
-                "message": err
+                "message": result.message
             }), HTTPStatus.INTERNAL_SERVER_ERROR  # 500
 
         return jsonify({
             "status": "success",
-            "data": categories
+            "data": result
         }), HTTPStatus.OK
 
     def update_category(self, category_id: int):
@@ -71,33 +85,51 @@ class CategoryController:
                 }
             ), HTTPStatus.BAD_REQUEST
 
-        category, err = self.category_service.update_category(
+        result = self.category_service.update_category(
             category_id=category_id,
             data=data
         )
 
-        if err:
-            return (jsonify({
+        if isinstance(result, CategoryNotFoundException):
+            return jsonify({
                 "status": 'error',
-                "message": err
-            }), HTTPStatus.NOT_FOUND if err == f"{self.category_service.category_repo.model_class.__name__} not found"
-            else HTTPStatus.BAD_REQUEST)
+                "message": result.message
+            }), HTTPStatus.NOT_FOUND
+
+        if isinstance(result, CategoryValidationException):  # Добавляем проверку на ошибку валидации из сервиса
+            return jsonify({
+                "status": 'error',
+                "message": result.message
+            }), HTTPStatus.BAD_REQUEST
+
+        if isinstance(result, CategoryUpdateException):
+            return jsonify({
+                "status": 'error',
+                "message": result.message
+            }), HTTPStatus.INTERNAL_SERVER_ERROR  # Ошибка обновления, возможно, связана с БД
 
         return jsonify({
             "status": 'success',
-            "data": category
+            "data": result
         }), HTTPStatus.OK
 
     def delete_category(self, category_id: int):
-        success, err = self.category_service.delete_category(category_id)
+        result = self.category_service.delete_category(category_id)
 
-        if err:
-            return (jsonify({
+        if isinstance(result, CategoryNotFoundException):
+            return jsonify({
                 "status": 'error',
-                "message": err
-            }), HTTPStatus.NOT_FOUND if err == f"{self.category_service.category_repo.model_class.__name__} not found"
-            else HTTPStatus.BAD_REQUEST)
+                "message": result.message
+            }), HTTPStatus.NOT_FOUND
 
+        if isinstance(result, CategoryDeletionException):
+            return jsonify({
+                "status": 'error',
+                "message": result.message
+            }), HTTPStatus.INTERNAL_SERVER_ERROR
+
+        # В случае успеха (result == True), возвращаем 204 No Content
         return jsonify({
             "status": 'success',
+            "message": "Category deleted successfully"
         }), HTTPStatus.NO_CONTENT

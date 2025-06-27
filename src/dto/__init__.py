@@ -18,6 +18,7 @@ from src.dto.category import (
     CategoryUpdateDTO,
     CategoryResponseDTO
 )
+from src.dto.vote import VoteShortInfoResponseDTO
 
 __all__ = (
     "BaseDTO",
@@ -35,5 +36,8 @@ __all__ = (
 
     "CategoryRequestDTO",
     "CategoryUpdateDTO",
-    "CategoryResponseDTO"
+    "CategoryResponseDTO",
+
+    "VoteShortInfoResponseDTO"
 )
+
